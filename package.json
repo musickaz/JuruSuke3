@@ -1,0 +1,24 @@
+{
+  "name": "JuruSuke3",
+  "version": "1.0.0",
+  "description": "JuruSuke3 Timetable collaborator.",
+  "author": "airamp",
+  "private": true,
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start",
+    "generate": "nuxt generate"
+  },
+  "dependencies": {
+    "@nuxtjs/pwa": "^3.0.0-beta.20",
+    "luxon": "^1.22.0",
+    "nuxt": "^2.0.0",
+    "vue-cal": "^2.24.7",
+    "vue-datetime": "^1.0.0-beta.11",
+    "weekstart": "^1.0.1"
+  },
+  "devDependencies": {
+    "@nuxtjs/vuetify": "^1.0.0"
+  }
+}
