@@ -1,4 +1,14 @@
 import colors from 'vuetify/es5/util/colors'
+require('dotenv').config();
+
+const { 
+  API_KEY, 
+  SENDER_ID, 
+  APP_ID, 
+  MEASUREMENT_ID,
+  npm_package_name,
+  npm_package_description,
+} = process.env;
 
 export default {
   mode: 'spa',
@@ -7,11 +17,11 @@ export default {
   */
   head: {
     titleTemplate: '%s',
-    title: process.env.npm_package_name || '',
+    title: npm_package_name || '',
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { hid: 'description', name: 'description', content: process.env.npm_package_description || '' }
+      { hid: 'description', name: 'description', content: npm_package_description || '' }
     ],
     link: [
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
@@ -84,6 +94,15 @@ export default {
     ** You can extend webpack config here
     */
     extend (config, ctx) {
+        config.node = {
+          fs: 'empty'
+      }
     }
+  },
+  env: {
+    API_KEY, 
+    SENDER_ID, 
+    APP_ID, 
+    MEASUREMENT_ID
   }
 }
