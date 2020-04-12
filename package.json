@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@nuxtjs/pwa": "^3.0.0-beta.20",
+    "firebase": "^7.14.0",
     "luxon": "^1.22.0",
     "nuxt": "^2.0.0",
     "vue-cal": "^2.24.7",
