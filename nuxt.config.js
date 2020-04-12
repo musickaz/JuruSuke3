@@ -103,6 +103,8 @@ export default {
     API_KEY, 
     SENDER_ID, 
     APP_ID, 
-    MEASUREMENT_ID
+    MEASUREMENT_ID,
+    npm_package_name,
+    npm_package_description,
   }
 }

@@ -1,16 +1,15 @@
 import firebase from 'firebase'
 
-console.log(process.env.SENDER_ID)
 if (!firebase.apps.length) {
   firebase.initializeApp({
-    apiKey: process.env.API_KEY,
+    apiKey: "AIzaSyBqmswu5Y5RwZhYxAJAy0HN9MpHwDr2Eq4",
     authDomain: "jurusuke3.firebaseapp.com",
     databaseURL: "https://jurusuke3.firebaseio.com",
     projectId: "jurusuke3",
     storageBucket: "jurusuke3.appspot.com",
-    messagingSenderId: process.env.SENDER_ID,
-    appId: process.env.APP_ID,
-    measurementId: process.env.MEASUREMENT_ID
+    messagingSenderId: "711610852916",
+    appId: "1:711610852916:web:f6a77d7e96ececb5ec8c61",
+    measurementId: "G-WBSMR8TWT0"
   })
 }
 
