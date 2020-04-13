@@ -1,5 +1,5 @@
 {
-  "name": "JuruSuke3",
+  "name": "jurusuke3",
   "version": "1.0.0",
   "description": "JuruSuke3 Timetable collaborator.",
   "author": "airamp",
@@ -8,7 +8,9 @@
     "dev": "nuxt",
     "build": "nuxt build",
     "start": "nuxt start",
-    "generate": "nuxt generate"
+    "generate": "nuxt generate",
+    "lint": "eslint --ext .js,.vue --ignore-path .gitignore .",
+    "lintfix": "eslint --fix --ext .js,.vue --ignore-path .gitignore ."
   },
   "dependencies": {
     "@nuxtjs/dotenv": "^1.4.1",
@@ -21,6 +23,13 @@
     "weekstart": "^1.0.1"
   },
   "devDependencies": {
-    "@nuxtjs/vuetify": "^1.0.0"
+    "@nuxtjs/vuetify": "^1.0.0",
+    "babel-eslint": "^10.1.0",
+    "es": "^0.7.3",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.10.1",
+    "eslint-loader": "^4.0.0",
+    "eslint-plugin-prettier": "^3.1.3",
+    "eslint-plugin-vue": "^6.2.2"
   }
 }

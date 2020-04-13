@@ -1,10 +1,6 @@
 <template>
   <v-app dark>
-    <v-navigation-drawer
-      v-model="drawer"
-      :clipped="clipped"
-      app
-    >
+    <v-navigation-drawer v-model="drawer" :clipped="clipped" app>
       <v-list>
         <v-list-item
           v-for="(item, i) in items"
@@ -30,23 +26,20 @@
       app
     >
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
-  <v-btn icon
-    nuxt
-    to="/">
-    <img src="/Js3logoSmall.png" height="40px">
-</v-btn>
+      <v-btn icon nuxt to="/">
+        <img src="/Js3logoSmall.png" height="40px" />
+      </v-btn>
 
-<v-toolbar-title><h3>　JuruSuke3</h3></v-toolbar-title>
+      <v-toolbar-title><h3>JuruSuke3</h3></v-toolbar-title>
     </v-app-bar>
 
-        <nuxt />
-
+    <nuxt />
   </v-app>
 </template>
 
 <script>
 export default {
-  data () {
+  data() {
     return {
       collapseOnScroll: true,
       clipped: false,
@@ -54,31 +47,31 @@ export default {
       fixed: false,
       items: [
         {
-          icon: 'mdi-timetable',
-          title: 'Event setup',
-          to: '/'
+          icon: "mdi-timetable",
+          title: "Event setup",
+          to: "/"
         },
         {
-          icon: 'mdi-help',
-          title: 'How to use',
-          to: '/How to use'
+          icon: "mdi-help",
+          title: "How to use",
+          to: "/howToUse"
         },
         {
-          icon: 'mdi-view-week',
-          title: 'TimeTable',
-          to: '/TimeTable'
+          icon: "mdi-view-week",
+          title: "TimeTable",
+          to: "/timeTable"
         },
         {
-          icon: 'mdi-headset',
-          title: 'FAQ and Contact',
-          to: '/FAQ'
+          icon: "mdi-headset",
+          title: "FAQ and Contact",
+          to: "/faq"
         },
         {
-          icon: 'mdi-library',
-          title: 'Terms and Conditions',
-          to: '/terms'
-        },
-      ],
+          icon: "mdi-library",
+          title: "Terms and Conditions",
+          to: "/terms"
+        }
+      ]
     }
   }
 }
