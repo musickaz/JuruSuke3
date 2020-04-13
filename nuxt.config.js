@@ -1,58 +1,54 @@
-import colors from 'vuetify/es5/util/colors'
-require('dotenv').config();
+import colors from "vuetify/es5/util/colors"
+require("dotenv").config()
 
-const { 
-  API_KEY, 
-  SENDER_ID, 
-  APP_ID, 
+const {
+  API_KEY,
+  SENDER_ID,
+  APP_ID,
   MEASUREMENT_ID,
   npm_package_name,
-  npm_package_description,
-} = process.env;
+  npm_package_description
+} = process.env
 
 export default {
-  mode: 'spa',
+  mode: "spa",
   /*
-  ** Headers of the page
-  */
+   ** Headers of the page
+   */
   head: {
-    titleTemplate: '%s',
-    title: npm_package_name || '',
+    titleTemplate: "%s",
+    title: npm_package_name || "",
     meta: [
-      { charset: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { hid: 'description', name: 'description', content: npm_package_description || '' }
+      { charset: "utf-8" },
+      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      {
+        hid: "description",
+        name: "description",
+        content: npm_package_description || ""
+      }
     ],
-    link: [
-      { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
-    ]
+    link: [{ rel: "icon", type: "image/x-icon", href: "/favicon.ico" }]
   },
   /*
-  ** Customize the progress-bar color
-  */
-  loading: { color: '#fff' },
+   ** Customize the progress-bar color
+   */
+  loading: { color: "#fff" },
   /*
-  ** Global CSS
-  */
-  css: [
-  ],
+   ** Global CSS
+   */
+  css: [],
   /*
-  ** Plugins to load before mounting the App
-  */
-  plugins: [
-  ],
+   ** Plugins to load before mounting the App
+   */
+  plugins: [],
   /*
-  ** Nuxt.js dev-modules
-  */
-  buildModules: [
-    '@nuxtjs/vuetify',
-  ],
+   ** Nuxt.js dev-modules
+   */
+  buildModules: ["@nuxtjs/vuetify"],
   /*
-  ** Nuxt.js modules
-  */
-  modules: [
-
-  ],
+   ** Nuxt.js modules
+   */
+  modules: [],
 
   // manifest: {
   //   name: "JuruSuke3",
@@ -66,11 +62,11 @@ export default {
   //   icon:"/icon.png"
   // },
   /*
-  ** vuetify module configuration
-  ** https://github.com/nuxt-community/vuetify-module
-  */
+   ** vuetify module configuration
+   ** https://github.com/nuxt-community/vuetify-module
+   */
   vuetify: {
-    customVariables: ['~/assets/variables.scss'],
+    customVariables: ["~/assets/variables.scss"],
     theme: {
       dark: true,
       themes: {
@@ -87,24 +83,24 @@ export default {
     }
   },
   /*
-  ** Build configuration
-  */
+   ** Build configuration
+   */
   build: {
     /*
-    ** You can extend webpack config here
-    */
-    extend (config, ctx) {
-        config.node = {
-          fs: 'empty'
+     ** You can extend webpack config here
+     */
+    extend(config) {
+      config.node = {
+        fs: "empty"
       }
     }
   },
   env: {
-    API_KEY, 
-    SENDER_ID, 
-    APP_ID, 
+    API_KEY,
+    SENDER_ID,
+    APP_ID,
     MEASUREMENT_ID,
     npm_package_name,
-    npm_package_description,
+    npm_package_description
   }
 }

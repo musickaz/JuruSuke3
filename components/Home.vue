@@ -1,14 +1,16 @@
 <template>
-    <button @click="googleLogin">googleでログイン</button>
+  <button @click="googleLogin">
+    googleでログイン
+  </button>
 </template>
 
 <script>
-import firebase from '@/plugins/firebase'
+import firebase from "@/plugins/firebase"
 export default {
-  name: 'home',
+  name: "Home",
   methods: {
     googleLogin: function() {
-      firebase.auth().signInWithRedirect(new firebase.auth.GoogleAuthProvider());
+      firebase.auth().signInWithRedirect(new firebase.auth.GoogleAuthProvider())
     }
   }
 }

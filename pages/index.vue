@@ -3,37 +3,38 @@
     <v-flex xs12 sm8 md6>
       <v-card class="mx-auto" max-width="600">
         <v-toolbar dense color="deep-purple">
-        <v-card-title>Setup Event イベント登録</v-card-title>
+          <v-card-title>Setup Event イベント登録</v-card-title>
         </v-toolbar>
-        <v-card-subtitle class="pb-0"
-          >You can input more details after Setup. イベント詳細は登録後に入力できます。</v-card-subtitle
-        >
+        <v-card-subtitle class="pb-0">
+          You can input more details after Setup.
+          イベント詳細は登録後に入力できます。
+        </v-card-subtitle>
 
         <v-card-text class="text--primary">
           <form @submit.prevent="onCreateEvent">
             <v-text-field
+              id="title"
+              v-model="title"
               class="secondary--text"
               name="title"
               label="Event Tiltle"
-              id="title"
               type="text"
-              v-model="title"
               required
-            ></v-text-field>
-   <!-- 日付入力 -->
+            />
+            <!-- 日付入力 -->
             <datetime
+              v-model="datetime"
               name="datetime"
               type="datetime"
               label="Event date time"
               placeholder="Event date time"
               format="yyyy-MM-dd HH:mm"
-              minute-step="5"
-              v-model="datetime"
+              :minute-step="5"
               required
-            ></datetime>
+            />
 
-            <hr class="my-3" />
-   <!-- コピー元の入力事項 この入力事項は後から編集させたい-->
+            <!-- <hr class="my-3"> -->
+            <!-- コピー元の入力事項 この入力事項は後から編集させたい-->
             <!-- <v-text-field
                 name="location"
                 label="Location"
@@ -71,10 +72,9 @@
 
             <v-card-actions>
               <v-spacer />
-              <v-btn type="submit" color="success" :disabled="!formIsVallide"
-                >Set Event</v-btn
-              >
-
+              <v-btn type="submit" color="success" :disabled="!formIsVallide">
+                Set Event
+              </v-btn>
             </v-card-actions>
           </form>
         </v-card-text>
@@ -84,35 +84,34 @@
 </template>
 
 <script>
-import Vue from "vue";
-import { Datetime } from "vue-datetime";
+import Vue from "vue"
+import { Datetime } from "vue-datetime"
 // You need a specific loader for CSS files
-import "vue-datetime/dist/vue-datetime.css";
+import "vue-datetime/dist/vue-datetime.css"
 
-Vue.use(Datetime);
+Vue.use(Datetime)
 
- // 以下コピー元から直接貼り付け修正お願いします。
+// 以下コピー元から直接貼り付け修正お願いします。
 export default {
+  components: {
+    datetime: Datetime
+  },
   data() {
     return {
       title: "",
-      datetime: "",
+      datetime: ""
       // description: "",
       // imageUrl: "",
       // location: "",
       // image: null,
       // DateTime: new DateTime().toISOString().substr(0, 10),
       // time: new DateTime()
-    };
-  },
-  components: {
-    datetime: Datetime
+    }
   },
   computed: {
     formIsVallide() {
       return (
-        this.title !== "" &&
-        this.datetime !== ""
+        this.title !== "" && this.datetime !== ""
         // this.location !== "" &&
         // this.description !== "" &&
         // this.imageUrl !== ""
@@ -120,26 +119,26 @@ export default {
     },
     // この日付取得をformat="yyyy-MM-dd HH:mm"で受け取り,Vue cal上の表示起点としたい
     submittableDateTime() {
-      const DateTime = new DateTime(this.DateTime);
+      const DateTime = new DateTime(this.DateTime)
       if (typeof this.time === "string") {
-        let hours = this.time.match(/^(\d+)/)[1];
-        let minutes = this.time.match(/:(\d+)/)[1];
-        DateTime.setHours(hours);
-        DateTime.setMinutes(minutes);
+        let hours = this.time.match(/^(\d+)/)[1]
+        let minutes = this.time.match(/:(\d+)/)[1]
+        DateTime.setHours(hours)
+        DateTime.setMinutes(minutes)
       } else {
-        DateTime.setHours(this.time.getHours());
-        DateTime.setMinutes(this.time.getMinutes());
+        DateTime.setHours(this.time.getHours())
+        DateTime.setMinutes(this.time.getMinutes())
       }
-      return DateTime;
+      return DateTime
     }
   },
   methods: {
     onCreateEvent() {
       if (!this.formIsVallide) {
-        return;
+        return
       }
       if (!this.image) {
-        return;
+        return
       }
       const EventData = {
         title: this.title,
@@ -148,28 +147,28 @@ export default {
         imageUrl: this.imageUrl,
         image: this.image,
         DateTime: this.submittableDateTime
-      };
-      this.$store.dispatch("createEvent", EventData);
-      this.$router.push("/TimeTable");
-      console.log("push");
+      }
+      this.$store.dispatch("createEvent", EventData)
+      this.$router.push("/TimeTable")
+      console.log("push")
     },
     onPickFile() {
-      this.$refs.fileInput.click();
+      this.$refs.fileInput.click()
     },
     onFilePicked(event) {
-      const files = event.target.files;
-      let fileName = files[0].name;
+      const files = event.target.files
+      let fileName = files[0].name
       if (fileName.lastIndexOf(".") <= 0) {
-        return alert("Please add a valid file!");
+        return alert("Please add a valid file!")
       }
-      const fileReader = new FileReader();
+      const fileReader = new FileReader()
       fileReader.addEventListener("load", () => {
-        this.imageUrl = fileReader.result;
-        console.log(this.imageUrl);
-      });
-      fileReader.readAsDataURL(files[0]);
-      this.image = files[0];
+        this.imageUrl = fileReader.result
+        console.log(this.imageUrl)
+      })
+      fileReader.readAsDataURL(files[0])
+      this.image = files[0]
     }
   }
-};
+}
 </script>
