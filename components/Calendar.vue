@@ -146,7 +146,16 @@
           @click:more="viewDay"
           @click:date="setDialogDate"
           @change="updateRange"
-        ></v-calendar>
+        >
+          <template #interval="{ hour, minute }">
+            <div style="width: 20px; text-align: center;">
+              <strong v-if="!minute" style="font-size: 20px">
+                {{ hour }}
+              </strong>
+              <!-- <span v-else style="font-size: 11px">{{ minute }}</span> -->
+            </div>
+          </template>
+        </v-calendar>
         <v-menu
           v-model="selectedOpen"
           :close-on-content-click="false"
