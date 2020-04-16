@@ -134,6 +134,7 @@ export default {
 .vuecal__event.clear-yellow {
   background-color: rgba(255, 240, 102, 0.9);
   border: 1px solid rgb(235, 225, 82);
+  color: gray;
 }
 .vuecal__now-line {
   color: rgb(0, 255, 0);
