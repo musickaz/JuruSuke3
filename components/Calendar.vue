@@ -21,30 +21,6 @@
           </v-btn>
           <v-toolbar-title>{{ title }}</v-toolbar-title>
           <div class="flex-grow-1"></div>
-          <v-menu bottom right>
-            <template v-slot:activator="{ on }">
-              <v-btn outlined v-on="on">
-                <span>{{ typeToLabel[type] }}</span>
-                <v-icon right>
-                  mdi-menu-down
-                </v-icon>
-              </v-btn>
-            </template>
-            <v-list>
-              <v-list-item @click="type = 'day'">
-                <v-list-item-title>Day</v-list-item-title>
-              </v-list-item>
-              <v-list-item @click="type = 'week'">
-                <v-list-item-title>Week</v-list-item-title>
-              </v-list-item>
-              <v-list-item @click="type = 'month'">
-                <v-list-item-title>Month</v-list-item-title>
-              </v-list-item>
-              <v-list-item @click="type = '4day'">
-                <v-list-item-title>4 days</v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-menu>
         </v-toolbar>
       </v-sheet>
 
@@ -73,47 +49,11 @@
                 label="end (required)"
               ></v-text-field>
               <v-text-field
-                v-model="color"
-                type="color"
-                label="color (click to open color menu)"
-              ></v-text-field>
-              <v-btn
-                type="submit"
-                color="primary"
-                class="mr-4"
-                @click.stop="dialog = false"
-              >
-                create event
-              </v-btn>
-            </v-form>
-          </v-container>
-        </v-card>
-      </v-dialog>
-
-      <v-dialog v-model="dialogDate" max-width="500">
-        <v-card>
-          <v-container>
-            <v-form @submit.prevent="addEvent">
-              <v-text-field
-                v-model="name"
-                type="text"
-                label="event name (required)"
-              ></v-text-field>
-              <v-text-field
-                v-model="details"
-                type="text"
-                label="detail"
-              ></v-text-field>
-              <v-text-field
-                v-model="start"
-                type="date"
-                label="start (required)"
-              ></v-text-field>
-              <v-text-field
                 v-model="end"
-                type="date"
+                type="time"
                 label="end (required)"
               ></v-text-field>
+              <v-time-picker v-model="timePicker"></v-time-picker>
               <v-text-field
                 v-model="color"
                 type="color"
@@ -137,25 +77,21 @@
           ref="calendar"
           v-model="focus"
           color="primary"
-          :events="events"
+          interval-height="30"
+          interval-minutes="10"
+          interval-width="50"
+          type="day"
           :event-color="getEventColor"
           :event-margin-bottom="3"
-          :now="today"
-          :type="type"
+          :events="events"
+          :first-interval="6 * 6"
+          :interval-count="6 * 24"
+          :interval-format="intervalFormat"
           @click:event="showEvent"
-          @click:more="viewDay"
-          @click:date="setDialogDate"
+          @click:date="setDialog"
           @change="updateRange"
-        >
-          <template #interval="{ hour, minute }">
-            <div style="width: 20px; text-align: center;">
-              <strong v-if="!minute" style="font-size: 20px">
-                {{ hour }}
-              </strong>
-              <!-- <span v-else style="font-size: 11px">{{ minute }}</span> -->
-            </div>
-          </template>
-        </v-calendar>
+        ></v-calendar>
+
         <v-menu
           v-model="selectedOpen"
           :close-on-content-click="false"
@@ -220,13 +156,6 @@ export default {
   data: () => ({
     today: new Date().toISOString().substr(0, 10),
     focus: new Date().toISOString().substr(0, 10),
-    type: "month",
-    typeToLabel: {
-      month: "Month",
-      week: "Week",
-      day: "Day",
-      "4day": "4 Days"
-    },
     name: null,
     details: null,
     start: null,
@@ -237,8 +166,8 @@ export default {
     selectedElement: null,
     selectedOpen: false,
     events: [],
-    dialog: false,
-    dialogDate: false
+    timePicker: null,
+    dialog: false
   }),
   computed: {
     title() {
@@ -247,23 +176,9 @@ export default {
         return ""
       }
       const startMonth = this.monthFormatter(start)
-      const endMonth = this.monthFormatter(end)
-      const suffixMonth = startMonth === endMonth ? "" : endMonth
       const startYear = start.year
-      const endYear = end.year
-      const suffixYear = startYear === endYear ? "" : endYear
       const startDay = start.day + this.nth(start.day)
-      const endDay = end.day + this.nth(end.day)
-      switch (this.type) {
-        case "month":
-          return `${startMonth} ${startYear}`
-        case "week":
-        case "4day":
-          return `${startMonth} ${startDay} ${startYear} - ${suffixMonth} ${endDay} ${suffixYear}`
-        case "day":
-          return `${startMonth} ${startDay} ${startYear}`
-      }
-      return ""
+      return `${startMonth} ${startDay} ${startYear}`
     },
     monthFormatter() {
       return this.$refs.calendar.getFormatter({
@@ -283,17 +198,19 @@ export default {
       snapshot.forEach(doc => {
         let appData = doc.data()
         appData.id = doc.id
+        appData.start = `${appData.start} 14:10`
+        appData.end = `${appData.end} 15:10`
+
         events.push(appData)
       })
       this.events = events
     },
-    setDialogDate({ date }) {
-      this.dialogDate = true
+    setDialog({ date }) {
+      this.dialog = true
       this.focus = date
     },
-    viewDay({ date }) {
-      this.focus = date
-      this.type = "day"
+    intervalFormat({ minute, hour }) {
+      return hour + ":" + (minute === 0 ? "00" : minute)
     },
     getEventColor(event) {
       return event.color
@@ -317,11 +234,11 @@ export default {
           color: this.color
         })
         this.getEvents()
-        ;(this.name = ""),
-          (this.details = ""),
-          (this.start = ""),
-          (this.end = ""),
-          (this.color = "")
+        this.name = ""
+        this.details = ""
+        this.start = ""
+        this.end = ""
+        this.color = ""
       } else {
         alert("You must enter event name, start, and end time")
       }

@@ -1,290 +1,142 @@
 <template>
-  <v-row class="fill-height">
-    <v-col>
-      <v-sheet height="64">
-        <v-toolbar flat color="">
-          <v-btn color="primary" dark @click.stop="dialog = true">
-            New Event
-          </v-btn>
-          <v-btn outlined class="mr-4" @click="setToday">
-            Today
-          </v-btn>
-          <v-btn fab text small @click="prev">
-            <v-icon small>
-              mdi-chevron-left
-            </v-icon>
-          </v-btn>
-          <v-btn fab text small @click="next">
-            <v-icon small>
-              mdi-chevron-right
-            </v-icon>
-          </v-btn>
-          <v-toolbar-title>{{ title }}</v-toolbar-title>
-          <div class="flex-grow-1"></div>
-        </v-toolbar>
-      </v-sheet>
+  <v-layout column justify-center align-center>
+    <v-card class="mx-auto" width="600" height="600">
+      <v-toolbar dense color="gray">
+        <v-card-text>イベントタイトル読み込み</v-card-text>
 
-      <v-dialog v-model="dialog" max-width="500">
+        <v-spacer />
+
+        <!-- イベントのユニークURLを取得しシェア。（ルームアドレス） -->
+        <v-btn icon>
+          <v-icon>mdi-share-variant</v-icon>
+        </v-btn>
+      </v-toolbar>
+
+      <vue-cal
+        default-view="day"
+        editable-events
+        hide-title-bar
+        hide-view-selector
+        hide-weekends
+        small
+        selected-date="2020-04-17"
+        :disable-views="['years', 'year', 'month', 'week', 'day']"
+        :cell-click-hold="false"
+        :events="events"
+        :time-cell-height="30"
+        :time-from="5 * 60"
+        :time-step="10"
+        :time-to="29 * 60"
+        :on-event-click="onEventClick"
+      >
+        <template #time-cell="{ hours, minutes }">
+          <div :class="{ line: true }">
+            <strong v-if="!minutes" style="font-size: 20px">{{ hours }}</strong>
+            <span v-else style="font-size: 11px">{{ minutes }}</span>
+          </div>
+        </template>
+      </vue-cal>
+
+      <v-dialog v-model="showDialog">
         <v-card>
-          <v-container>
-            <v-form @submit.prevent="addEvent">
-              <v-text-field
-                v-model="name"
-                type="text"
-                label="event name (required)"
-              ></v-text-field>
-              <v-text-field
-                v-model="details"
-                type="text"
-                label="detail"
-              ></v-text-field>
-              <v-text-field
-                v-model="start"
-                type="date"
-                label="start (required)"
-              ></v-text-field>
-              <v-text-field
-                v-model="end"
-                type="date"
-                label="end (required)"
-              ></v-text-field>
-              <v-text-field
-                v-model="end"
-                type="time"
-                label="end (required)"
-              ></v-text-field>
-              <v-time-picker v-model="timePicker"></v-time-picker>
-              <v-text-field
-                v-model="color"
-                type="color"
-                label="color (click to open color menu)"
-              ></v-text-field>
-              <v-btn
-                type="submit"
-                color="primary"
-                class="mr-4"
-                @click.stop="dialog = false"
-              >
-                create event
-              </v-btn>
-            </v-form>
-          </v-container>
+          <v-card-title>
+            <v-icon>{{ selectedEvent.icon }}</v-icon>
+            <span>{{ selectedEvent.title }}</span>
+            <v-spacer />
+            <strong>
+              {{ selectedEvent.start && selectedEvent.start }}
+            </strong>
+          </v-card-title>
+          <v-card-text>
+            <p>{{ selectedEvent.contentFull }}</p>
+
+            <strong>Event details:</strong>
+            <ul>
+              <li>
+                Event starts at:
+                {{ selectedEvent.start && selectedEvent.start }}
+              </li>
+              <li>
+                Event ends at:
+                {{ selectedEvent.end && selectedEvent.end }}
+              </li>
+            </ul>
+          </v-card-text>
         </v-card>
       </v-dialog>
-
-      <v-sheet height="600">
-        <v-calendar
-          ref="calendar"
-          v-model="focus"
-          color="primary"
-          interval-height="30"
-          interval-minutes="10"
-          interval-width="50"
-          type="day"
-          :event-color="getEventColor"
-          :event-margin-bottom="3"
-          :events="events"
-          :first-interval="6 * 6"
-          :interval-count="6 * 24"
-          :interval-format="intervalFormat"
-          @click:event="showEvent"
-          @click:date="setDialog"
-          @change="updateRange"
-        ></v-calendar>
-
-        <v-menu
-          v-model="selectedOpen"
-          :close-on-content-click="false"
-          :activator="selectedElement"
-          full-width
-          offset-x
-        >
-          <v-card color="grey" :width="350" flat>
-            <v-toolbar :color="selectedEvent.color" dark>
-              <v-btn icon @click="deleteEvent(selectedEvent.id)">
-                <v-icon>mdi-delete</v-icon>
-              </v-btn>
-              <v-toolbar-title v-html="selectedEvent.name"></v-toolbar-title>
-              <div class="flex-grow-1"></div>
-            </v-toolbar>
-
-            <v-card-text>
-              <form v-if="currentlyEditing !== selectedEvent.id">
-                {{ selectedEvent.details }}
-              </form>
-              <form v-else>
-                <v-textarea
-                  v-model="selectedEvent.details"
-                  type="text"
-                  style="width: 100%"
-                  :min-height="100"
-                  placeholder="add note"
-                ></v-textarea>
-              </form>
-            </v-card-text>
-
-            <v-card-actions>
-              <v-btn text color="secondary" @click="selectedOpen = false">
-                close
-              </v-btn>
-              <v-btn
-                v-if="currentlyEditing !== selectedEvent.id"
-                text
-                @click.prevent="editEvent(selectedEvent)"
-              >
-                edit
-              </v-btn>
-              <v-btn
-                v-else
-                text
-                type="submit"
-                @click.prevent="updateEvent(selectedEvent)"
-              >
-                Save
-              </v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-menu>
-      </v-sheet>
-    </v-col>
-  </v-row>
+    </v-card>
+  </v-layout>
 </template>
 
 <script>
+import VueCal from "vue-cal"
+import "vue-cal/dist/vuecal.css"
 import { db } from "~/store"
 export default {
+  components: { VueCal },
   data: () => ({
-    today: new Date().toISOString().substr(0, 10),
-    focus: new Date().toISOString().substr(0, 10),
-    name: null,
-    details: null,
-    start: null,
-    end: null,
-    color: "#1976D2", // default event color
-    currentlyEditing: null,
     selectedEvent: {},
-    selectedElement: null,
-    selectedOpen: false,
-    events: [],
-    timePicker: null,
-    dialog: false
+    showDialog: false,
+    events: []
   }),
-  computed: {
-    title() {
-      const { start, end } = this
-      if (!start || !end) {
-        return ""
-      }
-      const startMonth = this.monthFormatter(start)
-      const startYear = start.year
-      const startDay = start.day + this.nth(start.day)
-      return `${startMonth} ${startDay} ${startYear}`
-    },
-    monthFormatter() {
-      return this.$refs.calendar.getFormatter({
-        timeZone: "UTC",
-        month: "long"
-      })
-    }
-  },
+  computed: {},
   mounted() {
-    this.getEvents()
+    this.events = [
+      {
+        start: "2020-04-17 14:00",
+        end: "2020-04-17 18:00",
+        title: "Need to go shopping",
+        icon: "shopping_cart", // Custom attribute.
+        content: "Click to see my shopping list",
+        contentFull:
+          "My shopping list is rather long:<br><ul><li>Avocados</li><li>Tomatoes</li><li>Potatoes</li><li>Mangoes</li></ul>", // Custom attribute.
+        class: "clear-orange"
+      },
+      {
+        start: "2020-04-17 10:00",
+        end: "2020-04-17 15:00",
+        title: "Golf with John",
+        icon: "golf_course", // Custom attribute.
+        content: "Do I need to tell how many holes?",
+        contentFull: "Okay.<br>It will be a 18 hole golf course.", // Custom attribute.
+        class: "clear-yellow"
+      }
+    ]
   },
   methods: {
-    async getEvents() {
-      let snapshot = await db.collection("calaEvent").get()
-      const events = []
+    onEventClick(event, e) {
+      this.selectedEvent = event
+      this.showDialog = true
 
-      snapshot.forEach(doc => {
-        let appData = doc.data()
-        appData.id = doc.id
-        appData.start = `${appData.start} 14:10`
-        appData.end = `${appData.end} 15:10`
-
-        events.push(appData)
-      })
-      this.events = events
-    },
-    setDialog({ date }) {
-      this.dialog = true
-      this.focus = date
-    },
-    intervalFormat({ minute, hour }) {
-      return hour + ":" + (minute === 0 ? "00" : minute)
-    },
-    getEventColor(event) {
-      return event.color
-    },
-    setToday() {
-      this.focus = this.today
-    },
-    prev() {
-      this.$refs.calendar.prev()
-    },
-    next() {
-      this.$refs.calendar.next()
-    },
-    async addEvent() {
-      if (this.name && this.start && this.end) {
-        await db.collection("calaEvent").add({
-          name: this.name,
-          details: this.details,
-          start: this.start,
-          end: this.end,
-          color: this.color
-        })
-        this.getEvents()
-        this.name = ""
-        this.details = ""
-        this.start = ""
-        this.end = ""
-        this.color = ""
-      } else {
-        alert("You must enter event name, start, and end time")
-      }
-    },
-    editEvent(ev) {
-      this.currentlyEditing = ev.id
-    },
-    async updateEvent(ev) {
-      await db
-        .collection("calaEvent")
-        .doc(this.currentlyEditing)
-        .update({
-          details: ev.details
-        })
-      ;(this.selectedOpen = false), (this.currentlyEditing = null)
-    },
-    async deleteEvent(ev) {
-      await db
-        .collection("calaEvent")
-        .doc(ev)
-        .delete()
-      ;(this.selectedOpen = false), this.getEvents()
-    },
-    showEvent({ nativeEvent, event }) {
-      const open = () => {
-        this.selectedEvent = event
-        this.selectedElement = nativeEvent.target
-        setTimeout(() => (this.selectedOpen = true), 10)
-      }
-      if (this.selectedOpen) {
-        this.selectedOpen = false
-        setTimeout(open, 10)
-      } else {
-        open()
-      }
-      nativeEvent.stopPropagation()
-    },
-    updateRange({ start, end }) {
-      this.start = start
-      this.end = end
-    },
-    nth(d) {
-      return d > 3 && d < 21
-        ? "th"
-        : ["th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th"][d % 10]
+      // Prevent navigating to narrower view (default vue-cal behavior).
+      e.stopPropagation()
     }
   }
 }
 </script>
+
+<style>
+.vuecal__event {
+  color: #fff;
+}
+.vuecal__event.clear-orange {
+  background-color: rgba(253, 156, 66, 0.9);
+  border: 1px solid rgb(233, 136, 46);
+}
+.vuecal__event.clear-pink {
+  background-color: rgba(255, 102, 102, 0.9);
+  border: 1px solid rgb(235, 82, 82);
+}
+.vuecal__event.clear-blue {
+  background-color: rgba(102, 117, 255, 0.9);
+  border: 1px solid rgb(97, 82, 235);
+}
+.vuecal__event.clear-yellow {
+  background-color: rgba(255, 240, 102, 0.9);
+  border: 1px solid rgb(235, 225, 82);
+}
+.vuecal__now-line {
+  color: rgb(0, 255, 0);
+  border-top-width: 2px;
+}
+</style>
