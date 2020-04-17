@@ -26,10 +26,9 @@
         :on-event-click="onEventClick"
         :on-event-create="addEvent"
         :watch-real-time="true"
-        @event-duration-change="onEventChange('event-duration-change', $event)"
-        @event-title-change="onEventChange('event-title-change', $event)"
-        @event-content-change="onEventChange('event-content-change', $event)"
-        @event-delete="onEventChange('event-delete', $event)"
+        @event-duration-change="onEventChange('end', $event)"
+        @event-delete="onEventDelete('event-delete', $event)"
+        @event-drop="onEventDorop('event-drop', $event)"
         @cell-dblclick="
           $refs.vuecal.createEvent($event, 15, {
             title: 'New Event',
@@ -81,6 +80,7 @@ import VueCal from "vue-cal"
 import "vue-cal/dist/vuecal.css"
 import "vue-cal/dist/drag-and-drop.js"
 import { db } from "~/store"
+
 export default {
   components: { VueCal },
   data: () => ({
@@ -99,12 +99,15 @@ export default {
       const events = []
 
       snapshot.forEach(doc => {
-        const { start, end, title, content, id, ...dist } = doc.data()
+        const { title, start, end, content, ...dist } = doc.data()
+        const formatTimestamp = date =>
+          String(new Date(date.seconds * 1000).format("YYYY-MM-DD HH:mm"))
 
         events.push({
-          start: String(start),
-          end: String(end),
+          id: doc.id,
           title,
+          start: formatTimestamp(start),
+          end: formatTimestamp(end),
           content,
           class: dist.class
         })
@@ -115,8 +118,8 @@ export default {
     },
     async addEvent({ start, end, title, content, ...dist }) {
       await db.collection("vueCalEvent").add({
-        start: start.format("YYYY-MM-DD HH:mm"),
-        end: end.format("YYYY-MM-DD HH:mm"),
+        start,
+        end,
         title,
         content,
         class: dist.class
@@ -130,8 +133,28 @@ export default {
 
       e.stopPropagation() // Prevent navigating to narrower view (default vue-cal behavior).
     },
-    onEventChange(eventKind, e) {
-      console.log(eventKind, e)
+    async onEventChange(eventKind, { event }) {
+      await db
+        .collection("vueCalEvent")
+        .doc(event.id)
+        .update({
+          [eventKind]: event[eventKind]
+        })
+    },
+    async onEventDorop(eventKind, { event }) {
+      await db
+        .collection("vueCalEvent")
+        .doc(event.id)
+        .update({
+          start: event.start,
+          end: event.end
+        })
+    },
+    async onEventDelete(eventKind, { id }) {
+      await db
+        .collection("vueCalEvent")
+        .doc(id)
+        .delete()
     }
   }
 }
@@ -168,5 +191,15 @@ export default {
 .vuecal__event.new-event {
   background-color: rgb(218, 218, 218);
   color: gray;
+}
+.vuecal__event.break {
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    #f2f2f2 10px,
+    #f2f2f2 20px
+  ); /* IE 10+ */
+  color: #999;
 }
 </style>
