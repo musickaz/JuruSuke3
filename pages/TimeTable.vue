@@ -18,7 +18,21 @@
             mdi-arrow-down-bold-hexagon-outline
           </v-icon>
         </v-btn>
+        <v-card-title>
+          <div class="color-black">
+            Status:
+            <span :class="`current-schedule ${getCurrentStatus.color}`">
+              {{ getCurrentStatus.status }}
+            </span>
+            <v-btn icon @click="scheduleDialog = true">
+              <v-icon color="blue-grey">
+                mdi-circle-edit-outline
+              </v-icon>
+            </v-btn>
+          </div>
+        </v-card-title>
       </v-toolbar>
+
       <vue-cal
         id="vuecal"
         ref="vuecal"
@@ -72,26 +86,20 @@
           >
             {{ event.title }}
           </div>
-          <div class="edit-icon" @click="isOpenDialog = true">
-            <v-icon color="blue-grey">
-              mdi-square-edit-outline
-            </v-icon>
+          <div class="edit-icon" @click="eventDialog = true">
+            <v-btn icon>
+              <v-icon color="blue-grey">
+                mdi-square-edit-outline
+              </v-icon>
+            </v-btn>
           </div>
         </template>
       </vue-cal>
 
-      <v-dialog v-model="isOpenDialog">
+      <v-dialog v-model="eventDialog" persistent max-width="500">
         <v-card>
-          <v-card-title>
-            <v-icon>{{ selectedEvent.icon }}</v-icon>
-            <span>{{ selectedEvent.title }}</span>
-            <v-spacer />
-            <strong>
-              {{
-                selectedEvent.start &&
-                  selectedEvent.start.format("YYYY-MM-DD HH:mm")
-              }}
-            </strong>
+          <v-card-title class="headline">
+            {{ selectedEvent.title }}
           </v-card-title>
           <v-card-text>
             <p>{{ selectedEvent.content }}</p>
@@ -121,6 +129,51 @@
               </div>
             </div>
           </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="green darken-1" text @click="eventDialog = false">
+              Close
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+      <v-dialog v-model="scheduleDialog" persistent max-width="290">
+        <v-card>
+          <v-card-title class="headline">
+            Edit Status
+          </v-card-title>
+          <v-card-text>
+            <v-btn icon @click="newStatus = newStatus - 1">
+              <v-icon color="blue-grey">
+                mdi-minus-circle-outline
+              </v-icon>
+            </v-btn>
+            {{ Number(currentStatus.status) + newStatus }}
+            <v-btn icon @click="newStatus = newStatus + 1">
+              <v-icon color="blue-grey">
+                mdi-plus-circle-outline
+              </v-icon>
+            </v-btn>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="green darken-1" text @click="onCancelUpdateStatus">
+              Cancel
+            </v-btn>
+            <v-btn
+              color="green darken-1"
+              text
+              @click="
+                onUpdateStatus(
+                  currentStatus.id,
+                  Number(currentStatus.status) + newStatus
+                )
+              "
+            >
+              Save
+            </v-btn>
+          </v-card-actions>
         </v-card>
       </v-dialog>
     </v-card>
@@ -142,8 +195,11 @@ export default {
   components: { VueCal },
   data: () => ({
     selectedEvent: {},
-    isOpenDialog: false,
+    scheduleDialog: false,
+    eventDialog: false,
+    newStatus: 0,
     events: [],
+    currentStatus: { id: "", status: 0 },
     colors: [
       "clear-orange",
       "clear-pink",
@@ -162,15 +218,40 @@ export default {
     },
     getTimeFrom() {
       return TIME_FROM
+    },
+    getCurrentStatus() {
+      const currentStatus = Number(this.currentStatus.status)
+      console.log(currentStatus)
+      const formatedStatus =
+        currentStatus === 0
+          ? "As Scheduled"
+          : currentStatus > 0
+          ? `+ ${currentStatus} min`
+          : `${currentStatus} min`
+
+      const color =
+        currentStatus === 0
+          ? "font-green"
+          : currentStatus > 0
+          ? "font-red"
+          : "font-blue"
+
+      return { status: formatedStatus, color }
     }
   },
   mounted() {
-    console.log(this.events)
     this.getEvents()
   },
   methods: {
     async getEvents() {
       let snapshot = await db.collection("vueCalEvent").get()
+      let snapshot2 = await db.collection("vueCalStatus").get()
+      console.log(snapshot2.docs[0])
+      this.currentStatus = {
+        id: snapshot2.docs[0].id,
+        status: snapshot2.docs[0].data().status
+      }
+
       const events = []
 
       snapshot.forEach(doc => {
@@ -206,7 +287,6 @@ export default {
       e.stopPropagation() // Prevent navigating to narrower view (default vue-cal behavior).
     },
     async onEventChange(eventKind, { event }) {
-      console.log(eventKind, event)
       await db
         .collection("vueCalEvent")
         .doc(event.id)
@@ -230,9 +310,23 @@ export default {
         .doc(id)
         .delete()
     },
+    async onUpdateStatus(id, newStatus) {
+      this.scheduleDialog = false
+      this.currentStatus = { id: this.currentStatus.id, status: newStatus }
+      await db
+        .collection("vueCalStatus")
+        .doc(id)
+        .update({
+          status: newStatus
+        })
+      this.newStatus = 0
+    },
+    onCancelUpdateStatus() {
+      this.scheduleDialog = false
+      this.newStatus = 0
+    },
     scrollToCurrentTime() {
       const now = new Date()
-      console.log(now.getHours())
       const calendar = document.querySelector("#vuecal .vuecal__bg")
       const hours =
         ((now.getHours() + now.getMinutes() / AN_HOUR - TIME_FROM) * AN_HOUR) /
@@ -252,6 +346,18 @@ export default {
 }
 .v-card {
   padding: 10px;
+}
+.v-card .current-schedule {
+  margin-left: 5px;
+}
+.v-card .current-schedule.font-green {
+  color: rgb(0, 255, 0);
+}
+.v-card .current-schedule.font-blue {
+  color: #28a8ff;
+}
+.v-card .current-schedule.font-red {
+  color: red;
 }
 .color-picke-container {
   display: flex;
