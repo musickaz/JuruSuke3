@@ -86,23 +86,74 @@
             <span>{{ selectedEvent.title }}</span>
             <v-spacer />
             <strong>
-              {{ selectedEvent.start && selectedEvent.start }}
+              {{
+                selectedEvent.start &&
+                  selectedEvent.start.format("YYYY-MM-DD HH:mm")
+              }}
             </strong>
           </v-card-title>
           <v-card-text>
-            <p>{{ selectedEvent.contentFull }}</p>
-
-            <strong>Event details:</strong>
-            <ul>
-              <li>
-                Event starts at:
-                {{ selectedEvent.start && selectedEvent.start }}
-              </li>
-              <li>
-                Event ends at:
-                {{ selectedEvent.end && selectedEvent.end }}
-              </li>
-            </ul>
+            <p>{{ selectedEvent.content }}</p>
+            {{
+              selectedEvent.start &&
+                selectedEvent.start.format("YYYY-MM-DD HH:mm")
+            }}
+            {{
+              selectedEvent.end && selectedEvent.end.format("YYYY-MM-DD HH:mm")
+            }}
+            <div>
+              <strong>Change Color</strong>
+            </div>
+            <div class="color-picke-container">
+              <div
+                class="color-box clear-orange"
+                @click="
+                  onEventChange('class', {
+                    event: { id: selectedEvent.id, class: 'clear-orange' }
+                  })
+                "
+              ></div>
+              <div
+                class="color-box clear-pink"
+                @click="
+                  onEventChange('class', {
+                    event: { id: selectedEvent.id, class: 'clear-pink' }
+                  })
+                "
+              ></div>
+              <div
+                class="color-box clear-blue"
+                @click="
+                  onEventChange('class', {
+                    event: { id: selectedEvent.id, class: 'clear-blue' }
+                  })
+                "
+              ></div>
+              <div
+                class="color-box clear-yellow"
+                @click="
+                  onEventChange('class', {
+                    event: { id: selectedEvent.id, class: 'clear-yellow' }
+                  })
+                "
+              ></div>
+              <div
+                class="color-box new-event"
+                @click="
+                  onEventChange('class', {
+                    event: { id: selectedEvent.id, class: 'new-event' }
+                  })
+                "
+              ></div>
+              <div
+                class="color-box break"
+                @click="
+                  onEventChange('class', {
+                    event: { id: selectedEvent.id, class: 'break' }
+                  })
+                "
+              ></div>
+            </div>
           </v-card-text>
         </v-card>
       </v-dialog>
@@ -181,12 +232,14 @@ export default {
       e.stopPropagation() // Prevent navigating to narrower view (default vue-cal behavior).
     },
     async onEventChange(eventKind, { event }) {
+      console.log(eventKind, event)
       await db
         .collection("vueCalEvent")
         .doc(event.id)
         .update({
           [eventKind]: event[eventKind]
         })
+      this.getEvents()
     },
     async onEventDorop(eventKind, { event }) {
       await db
@@ -223,6 +276,19 @@ export default {
 .event-title {
   margin-left: 10px;
 }
+.v-card {
+  padding: 10px;
+}
+.color-picke-container {
+  display: flex;
+}
+.color-picke-container .color-box {
+  cursor: pointer;
+  width: 25px;
+  height: 25px;
+  border-radius: 100%;
+  margin-right: 5px;
+}
 .vuecal__now-line {
   color: rgb(0, 255, 0);
   border-top-width: 2px;
@@ -246,34 +312,34 @@ export default {
   text-align: left;
   padding: 0 5px;
 }
-.vuecal__event.clear-orange {
+.clear-orange {
   background-color: rgba(253, 156, 66, 0.9);
   border: 1px solid rgb(233, 136, 46);
 }
-.vuecal__event.clear-pink {
+.clear-pink {
   background-color: rgba(255, 102, 102, 0.9);
   border: 1px solid rgb(235, 82, 82);
 }
-.vuecal__event.clear-blue {
+.clear-blue {
   background-color: rgba(102, 117, 255, 0.9);
   border: 1px solid rgb(97, 82, 235);
 }
-.vuecal__event.clear-yellow {
+.clear-yellow {
   background-color: rgba(255, 240, 102, 0.9);
   border: 1px solid rgb(235, 225, 82);
   color: gray;
 }
-.vuecal__event.new-event {
+.new-event {
   background-color: rgb(218, 218, 218);
   color: gray;
 }
-.vuecal__event.break {
+.break {
   background: repeating-linear-gradient(
     45deg,
     transparent,
-    transparent 10px,
-    #e7e7e7 10px,
-    #e7e7e7 20px
+    transparent 9px,
+    #e7e7e7 9px,
+    #e7e7e7 16px
   ); /* IE 10+ */
   color: dodgerblue;
 }
