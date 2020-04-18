@@ -144,17 +144,21 @@
             Edit Status
           </v-card-title>
           <v-card-text>
-            <v-btn icon @click="newStatus = newStatus - 1">
-              <v-icon color="blue-grey">
-                mdi-minus-circle-outline
-              </v-icon>
-            </v-btn>
-            {{ Number(currentStatus.status) + newStatus }}
-            <v-btn icon @click="newStatus = newStatus + 1">
-              <v-icon color="blue-grey">
-                mdi-plus-circle-outline
-              </v-icon>
-            </v-btn>
+            <div class="status-edit-wrapper">
+              <v-btn icon @click="newStatus = newStatus - 1">
+                <v-icon color="blue-grey">
+                  mdi-minus-circle-outline
+                </v-icon>
+              </v-btn>
+              <strong class="new-status">
+                {{ Number(currentStatus.status) + newStatus }}
+              </strong>
+              <v-btn icon @click="newStatus = newStatus + 1">
+                <v-icon color="blue-grey">
+                  mdi-plus-circle-outline
+                </v-icon>
+              </v-btn>
+            </div>
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
@@ -343,6 +347,15 @@ export default {
 <style>
 .event-title {
   /* margin-left: 10px; */
+}
+.new-status {
+  font-size: 20px;
+  font-weight: bold;
+  width: 30px;
+}
+.status-edit-wrapper {
+  text-align: center;
+  margin: 12px 0 0;
 }
 .v-card {
   padding: 10px;
