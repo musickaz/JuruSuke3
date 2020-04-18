@@ -2,21 +2,35 @@
   <v-layout column justify-center align-center>
     <v-card class="mx-auto" width="600" height="600">
       <v-toolbar dense color="gray">
+        <v-card-title class="event-title">
+          G's Hackathon
+        </v-card-title>
+        <v-spacer />
+        <!-- イベントのユニークURLを取得しシェア。（ルームアドレス） -->
+        <v-btn icon>
+          <v-icon>mdi-share-variant</v-icon>
+        </v-btn>
+      </v-toolbar>
+      <v-toolbar dense color="gray">
         <v-btn class="ma-2" color="primary" dark @click="scrollToCurrentTime">
           Now
           <v-icon dark right>
             mdi-arrow-down-bold-hexagon-outline
           </v-icon>
         </v-btn>
-
-        <div class="event-title">
-          G's Hackathon
-        </div>
-        <v-spacer />
-        <!-- イベントのユニークURLを取得しシェア。（ルームアドレス） -->
-        <v-btn icon>
-          <v-icon>mdi-share-variant</v-icon>
-        </v-btn>
+        <v-card-title>
+          <div class="color-black">
+            Status:
+            <span :class="`current-schedule ${getCurrentStatus.color}`">
+              {{ getCurrentStatus.status }}
+            </span>
+            <v-btn icon @click="scheduleDialog = true">
+              <v-icon color="blue-grey">
+                mdi-circle-edit-outline
+              </v-icon>
+            </v-btn>
+          </div>
+        </v-card-title>
       </v-toolbar>
 
       <vue-cal
@@ -25,6 +39,7 @@
         active-view="day"
         editable-events
         hide-view-selector
+        hide-title-bar
         small
         selected-date="2020-04-18"
         :time-cell-height="getTimecellHeight"
@@ -71,26 +86,20 @@
           >
             {{ event.title }}
           </div>
-          <div class="edit-icon" @click="isOpenDialog = true">
-            <v-icon color="blue-grey">
-              mdi-square-edit-outline
-            </v-icon>
+          <div class="edit-icon" @click="eventDialog = true">
+            <v-btn icon>
+              <v-icon color="blue-grey">
+                mdi-square-edit-outline
+              </v-icon>
+            </v-btn>
           </div>
         </template>
       </vue-cal>
 
-      <v-dialog v-model="isOpenDialog">
+      <v-dialog v-model="eventDialog" persistent max-width="500">
         <v-card>
-          <v-card-title>
-            <v-icon>{{ selectedEvent.icon }}</v-icon>
-            <span>{{ selectedEvent.title }}</span>
-            <v-spacer />
-            <strong>
-              {{
-                selectedEvent.start &&
-                  selectedEvent.start.format("YYYY-MM-DD HH:mm")
-              }}
-            </strong>
+          <v-card-title class="headline">
+            {{ selectedEvent.title }}
           </v-card-title>
           <v-card-text>
             <p>{{ selectedEvent.content }}</p>
@@ -105,56 +114,70 @@
               <strong>Change Color</strong>
             </div>
             <div class="color-picke-container">
-              <div
-                class="color-box clear-orange"
-                @click="
-                  onEventChange('class', {
-                    event: { id: selectedEvent.id, class: 'clear-orange' }
-                  })
-                "
-              ></div>
-              <div
-                class="color-box clear-pink"
-                @click="
-                  onEventChange('class', {
-                    event: { id: selectedEvent.id, class: 'clear-pink' }
-                  })
-                "
-              ></div>
-              <div
-                class="color-box clear-blue"
-                @click="
-                  onEventChange('class', {
-                    event: { id: selectedEvent.id, class: 'clear-blue' }
-                  })
-                "
-              ></div>
-              <div
-                class="color-box clear-yellow"
-                @click="
-                  onEventChange('class', {
-                    event: { id: selectedEvent.id, class: 'clear-yellow' }
-                  })
-                "
-              ></div>
-              <div
-                class="color-box new-event"
-                @click="
-                  onEventChange('class', {
-                    event: { id: selectedEvent.id, class: 'new-event' }
-                  })
-                "
-              ></div>
-              <div
-                class="color-box break"
-                @click="
-                  onEventChange('class', {
-                    event: { id: selectedEvent.id, class: 'break' }
-                  })
-                "
-              ></div>
+              <div v-for="(color, i) in colors" :key="i">
+                <div
+                  :class="
+                    `color-box
+                ${color}`
+                  "
+                  @click="
+                    onEventChange('class', {
+                      event: { id: selectedEvent.id, class: color }
+                    })
+                  "
+                ></div>
+              </div>
             </div>
           </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="green darken-1" text @click="eventDialog = false">
+              Close
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+      <v-dialog v-model="scheduleDialog" persistent max-width="290">
+        <v-card>
+          <v-card-title class="headline">
+            Edit Status
+          </v-card-title>
+          <v-card-text>
+            <div class="status-edit-wrapper">
+              <v-btn icon @click="newStatus = newStatus - 1">
+                <v-icon color="blue-grey">
+                  mdi-minus-circle-outline
+                </v-icon>
+              </v-btn>
+              <strong class="new-status">
+                {{ Number(currentStatus.status) + newStatus }}
+              </strong>
+              <v-btn icon @click="newStatus = newStatus + 1">
+                <v-icon color="blue-grey">
+                  mdi-plus-circle-outline
+                </v-icon>
+              </v-btn>
+            </div>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="green darken-1" text @click="onCancelUpdateStatus">
+              Cancel
+            </v-btn>
+            <v-btn
+              color="green darken-1"
+              text
+              @click="
+                onUpdateStatus(
+                  currentStatus.id,
+                  Number(currentStatus.status) + newStatus
+                )
+              "
+            >
+              Save
+            </v-btn>
+          </v-card-actions>
         </v-card>
       </v-dialog>
     </v-card>
@@ -176,8 +199,19 @@ export default {
   components: { VueCal },
   data: () => ({
     selectedEvent: {},
-    isOpenDialog: false,
-    events: []
+    scheduleDialog: false,
+    eventDialog: false,
+    newStatus: 0,
+    events: [],
+    currentStatus: { id: "", status: 0 },
+    colors: [
+      "clear-orange",
+      "clear-pink",
+      "clear-blue",
+      "clear-yellow",
+      "new-event",
+      "break"
+    ]
   }),
   computed: {
     getTimecellHeight() {
@@ -188,15 +222,40 @@ export default {
     },
     getTimeFrom() {
       return TIME_FROM
+    },
+    getCurrentStatus() {
+      const currentStatus = Number(this.currentStatus.status)
+      console.log(currentStatus)
+      const formatedStatus =
+        currentStatus === 0
+          ? "As Scheduled"
+          : currentStatus > 0
+          ? `+ ${currentStatus} min`
+          : `${currentStatus} min`
+
+      const color =
+        currentStatus === 0
+          ? "font-green"
+          : currentStatus > 0
+          ? "font-red"
+          : "font-blue"
+
+      return { status: formatedStatus, color }
     }
   },
   mounted() {
-    console.log(this.events)
     this.getEvents()
   },
   methods: {
     async getEvents() {
       let snapshot = await db.collection("vueCalEvent").get()
+      let snapshot2 = await db.collection("vueCalStatus").get()
+      console.log(snapshot2.docs[0])
+      this.currentStatus = {
+        id: snapshot2.docs[0].id,
+        status: snapshot2.docs[0].data().status
+      }
+
       const events = []
 
       snapshot.forEach(doc => {
@@ -232,7 +291,6 @@ export default {
       e.stopPropagation() // Prevent navigating to narrower view (default vue-cal behavior).
     },
     async onEventChange(eventKind, { event }) {
-      console.log(eventKind, event)
       await db
         .collection("vueCalEvent")
         .doc(event.id)
@@ -256,9 +314,23 @@ export default {
         .doc(id)
         .delete()
     },
+    async onUpdateStatus(id, newStatus) {
+      this.scheduleDialog = false
+      this.currentStatus = { id: this.currentStatus.id, status: newStatus }
+      await db
+        .collection("vueCalStatus")
+        .doc(id)
+        .update({
+          status: newStatus
+        })
+      this.newStatus = 0
+    },
+    onCancelUpdateStatus() {
+      this.scheduleDialog = false
+      this.newStatus = 0
+    },
     scrollToCurrentTime() {
       const now = new Date()
-      console.log(now.getHours())
       const calendar = document.querySelector("#vuecal .vuecal__bg")
       const hours =
         ((now.getHours() + now.getMinutes() / AN_HOUR - TIME_FROM) * AN_HOUR) /
@@ -274,10 +346,31 @@ export default {
 
 <style>
 .event-title {
-  margin-left: 10px;
+  /* margin-left: 10px; */
+}
+.new-status {
+  font-size: 20px;
+  font-weight: bold;
+  width: 30px;
+}
+.status-edit-wrapper {
+  text-align: center;
+  margin: 12px 0 0;
 }
 .v-card {
   padding: 10px;
+}
+.v-card .current-schedule {
+  margin-left: 5px;
+}
+.v-card .current-schedule.font-green {
+  color: rgb(0, 255, 0);
+}
+.v-card .current-schedule.font-blue {
+  color: #28a8ff;
+}
+.v-card .current-schedule.font-red {
+  color: red;
 }
 .color-picke-container {
   display: flex;
