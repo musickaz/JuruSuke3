@@ -2,7 +2,16 @@
   <v-layout column justify-center align-center>
     <v-card class="mx-auto" width="600" height="600">
       <v-toolbar dense color="gray">
-        <v-card-text>イベントタイトル読み込み</v-card-text>
+        <v-btn class="ma-2" color="primary" dark @click="scrollToCurrentTime">
+          Now
+          <v-icon dark right>
+            mdi-arrow-down-bold-hexagon-outline
+          </v-icon>
+        </v-btn>
+
+        <div class="event-title">
+          G's Hackathon
+        </div>
         <v-spacer />
         <!-- イベントのユニークURLを取得しシェア。（ルームアドレス） -->
         <v-btn icon>
@@ -11,21 +20,23 @@
       </v-toolbar>
 
       <vue-cal
+        id="vuecal"
         ref="vuecal"
         active-view="day"
         editable-events
         hide-view-selector
         small
-        selected-date="2020-04-17"
+        selected-date="2020-04-18"
+        :time-cell-height="getTimecellHeight"
         :events="events"
         :disable-views="['years', 'year', 'month', 'week']"
-        :time-cell-height="30"
-        :time-from="5 * 60"
-        :time-step="10"
+        :time-from="getTimeFrom * 60"
+        :time-step="getTimeStep"
         :time-to="29 * 60"
         :on-event-click="onEventClick"
         :on-event-create="addEvent"
         :watch-real-time="true"
+        @ready="scrollToCurrentTime"
         @event-duration-change="onEventChange('end', $event)"
         @event-delete="onEventDelete('event-delete', $event)"
         @event-drop="onEventDorop('event-drop', $event)"
@@ -42,9 +53,33 @@
             <span v-else style="font-size: 11px">{{ minutes }}</span>
           </div>
         </template>
+
+        <template #event="{ event }">
+          <small class="vuecal__event-time">
+            <span>{{ event.start.formatTime("h:mm") }}</span>
+            <span>-</span>
+            <span>{{ event.end.formatTime("h:mm") }}</span>
+          </small>
+          <div
+            class="vuecal__event-title vuecal__event-title--edit"
+            contenteditable
+            @blur="
+              onEventChange('title', {
+                event: { id: event.id, title: $event.target.innerHTML }
+              })
+            "
+          >
+            {{ event.title }}
+          </div>
+          <div class="edit-icon" @click="isOpenDialog = true">
+            <v-icon color="blue-grey">
+              mdi-square-edit-outline
+            </v-icon>
+          </div>
+        </template>
       </vue-cal>
 
-      <v-dialog v-model="showDialog">
+      <v-dialog v-model="isOpenDialog">
         <v-card>
           <v-card-title>
             <v-icon>{{ selectedEvent.icon }}</v-icon>
@@ -81,14 +116,29 @@ import "vue-cal/dist/vuecal.css"
 import "vue-cal/dist/drag-and-drop.js"
 import { db } from "~/store"
 
+const TIME_CELL_HEIGHT = 30
+const TIME_STEP = 5
+const TIME_FROM = 5
+const AN_HOUR = 60
+
 export default {
   components: { VueCal },
   data: () => ({
     selectedEvent: {},
-    showDialog: false,
+    isOpenDialog: false,
     events: []
   }),
-  computed: {},
+  computed: {
+    getTimecellHeight() {
+      return TIME_CELL_HEIGHT
+    },
+    getTimeStep() {
+      return TIME_STEP
+    },
+    getTimeFrom() {
+      return TIME_FROM
+    }
+  },
   mounted() {
     console.log(this.events)
     this.getEvents()
@@ -128,9 +178,6 @@ export default {
     },
     onEventClick(event, e) {
       this.selectedEvent = event
-      // this.showDialog = true
-      console.log(event, e)
-
       e.stopPropagation() // Prevent navigating to narrower view (default vue-cal behavior).
     },
     async onEventChange(eventKind, { event }) {
@@ -155,12 +202,27 @@ export default {
         .collection("vueCalEvent")
         .doc(id)
         .delete()
+    },
+    scrollToCurrentTime() {
+      const now = new Date()
+      console.log(now.getHours())
+      const calendar = document.querySelector("#vuecal .vuecal__bg")
+      const hours =
+        ((now.getHours() + now.getMinutes() / AN_HOUR - TIME_FROM) * AN_HOUR) /
+        TIME_STEP
+      calendar.scrollTo({
+        top: hours * TIME_CELL_HEIGHT,
+        behavior: "smooth"
+      })
     }
   }
 }
 </script>
 
 <style>
+.event-title {
+  margin-left: 10px;
+}
 .vuecal__now-line {
   color: rgb(0, 255, 0);
   border-top-width: 2px;
@@ -170,6 +232,19 @@ export default {
 }
 .vuecal__event {
   color: #fff;
+  padding: 0 5px;
+  text-align: left;
+  position: relative;
+}
+.edit-icon {
+  position: absolute;
+  right: 5px;
+  bottom: 10px;
+  cursor: pointer;
+}
+.vuecal__event-title {
+  text-align: left;
+  padding: 0 5px;
 }
 .vuecal__event.clear-orange {
   background-color: rgba(253, 156, 66, 0.9);
@@ -197,9 +272,9 @@ export default {
     45deg,
     transparent,
     transparent 10px,
-    #f2f2f2 10px,
-    #f2f2f2 20px
+    #e7e7e7 10px,
+    #e7e7e7 20px
   ); /* IE 10+ */
-  color: #999;
+  color: dodgerblue;
 }
 </style>
