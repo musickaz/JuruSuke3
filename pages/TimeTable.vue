@@ -2,29 +2,30 @@
   <v-layout column justify-center align-center>
     <v-card class="mx-auto" width="600" height="600">
       <v-toolbar dense color="gray">
-        <v-btn class="ma-2" color="primary" dark @click="scrollToCurrentTime">
-          Now
-          <v-icon dark right>
-            mdi-arrow-down-bold-hexagon-outline
-          </v-icon>
-        </v-btn>
-
-        <div class="event-title">
+        <v-card-title class="event-title">
           G's Hackathon
-        </div>
+        </v-card-title>
         <v-spacer />
         <!-- イベントのユニークURLを取得しシェア。（ルームアドレス） -->
         <v-btn icon>
           <v-icon>mdi-share-variant</v-icon>
         </v-btn>
       </v-toolbar>
-
+      <v-toolbar dense color="gray">
+        <v-btn class="ma-2" color="primary" dark @click="scrollToCurrentTime">
+          Now
+          <v-icon dark right>
+            mdi-arrow-down-bold-hexagon-outline
+          </v-icon>
+        </v-btn>
+      </v-toolbar>
       <vue-cal
         id="vuecal"
         ref="vuecal"
         active-view="day"
         editable-events
         hide-view-selector
+        hide-title-bar
         small
         selected-date="2020-04-18"
         :time-cell-height="getTimecellHeight"
@@ -105,54 +106,19 @@
               <strong>Change Color</strong>
             </div>
             <div class="color-picke-container">
-              <div
-                class="color-box clear-orange"
-                @click="
-                  onEventChange('class', {
-                    event: { id: selectedEvent.id, class: 'clear-orange' }
-                  })
-                "
-              ></div>
-              <div
-                class="color-box clear-pink"
-                @click="
-                  onEventChange('class', {
-                    event: { id: selectedEvent.id, class: 'clear-pink' }
-                  })
-                "
-              ></div>
-              <div
-                class="color-box clear-blue"
-                @click="
-                  onEventChange('class', {
-                    event: { id: selectedEvent.id, class: 'clear-blue' }
-                  })
-                "
-              ></div>
-              <div
-                class="color-box clear-yellow"
-                @click="
-                  onEventChange('class', {
-                    event: { id: selectedEvent.id, class: 'clear-yellow' }
-                  })
-                "
-              ></div>
-              <div
-                class="color-box new-event"
-                @click="
-                  onEventChange('class', {
-                    event: { id: selectedEvent.id, class: 'new-event' }
-                  })
-                "
-              ></div>
-              <div
-                class="color-box break"
-                @click="
-                  onEventChange('class', {
-                    event: { id: selectedEvent.id, class: 'break' }
-                  })
-                "
-              ></div>
+              <div v-for="(color, i) in colors" :key="i">
+                <div
+                  :class="
+                    `color-box
+                ${color}`
+                  "
+                  @click="
+                    onEventChange('class', {
+                      event: { id: selectedEvent.id, class: color }
+                    })
+                  "
+                ></div>
+              </div>
             </div>
           </v-card-text>
         </v-card>
@@ -177,7 +143,15 @@ export default {
   data: () => ({
     selectedEvent: {},
     isOpenDialog: false,
-    events: []
+    events: [],
+    colors: [
+      "clear-orange",
+      "clear-pink",
+      "clear-blue",
+      "clear-yellow",
+      "new-event",
+      "break"
+    ]
   }),
   computed: {
     getTimecellHeight() {
@@ -274,7 +248,7 @@ export default {
 
 <style>
 .event-title {
-  margin-left: 10px;
+  /* margin-left: 10px; */
 }
 .v-card {
   padding: 10px;
